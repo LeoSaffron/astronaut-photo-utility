@@ -74,5 +74,22 @@ for i in range(len(images)):
         index += 1
     plt.imshow(img)
     plt.show()
-        
-    
+
+def detect_faces_on_single_image(image):
+    pass
+
+def detect_faces_on_image_list(image_list):
+    pass
+
+def run_face_recognition_predetected_on_single_image(image, faces_coordinates_list):
+    pass
+
+def run_face_recognition_predetected_on_image_list(image_list, faces_coordinates_list_list):
+    pass
+
+def run_objects_detection_on_single_image(image):
+    pass
+
+def run_objects_detection_on_image_list(image_list):
+    pass
+
