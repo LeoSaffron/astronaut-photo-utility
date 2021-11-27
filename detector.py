@@ -147,22 +147,3 @@ def run_objects_detection_on_single_image(image):
 
 def run_objects_detection_on_image_list(image_list):
     pass
-
-
-# confirm mtcnn was installed correctly
-# print version
-
-pixels = asarray(image)
-
-# create the detector, using default weights
-# detect faces in the image
-results = detector.detect_faces(pixels)
-
-# extract the bounding box from the first face
-x1, y1, width, height = results[0]['box']
-# bug fix
-x1, y1 = abs(x1), abs(y1)
-x2, y2 = x1 + width, y1 + height
-
-# extract the face
-face = pixels[y1:y2, x1:x2]
