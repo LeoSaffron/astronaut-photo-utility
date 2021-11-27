@@ -36,6 +36,16 @@ from PIL import Image
 import skimage
 from skimage.io import imread
 
+#from mtcnn.mtcnn import MTCNN
+import mtcnn
+
+detection_mode = "mtcnn"
+
+
+detector_mtcnn = MTCNN()
+print(mtcnn.__version__)
+
+
 pic_limit = 10000
 def load_images_from_folder(folder): 
     images = [] 
@@ -75,8 +85,53 @@ for i in range(len(images)):
     plt.imshow(img)
     plt.show()
 
+
+def detect_faces_on_single_image_with_mtcnn(image):
+    # confirm mtcnn was installed correctly
+    # print version
+    
+    pixels = np.asarray(image)
+    
+    # create the detector, using default weights
+    # detect faces in the image
+    detection_results = detector_mtcnn.detect_faces(pixels)
+    
+    # extract the bounding box from the first face
+    face_coordinates = []
+    for detection_result_item in detection_results:
+            
+        x1, y1, width, height = detection_result_item['box']
+        # bug fix
+        x1, y1 = abs(x1), abs(y1)
+        x2, y2 = x1 + width, y1 + height
+        face_coordinates.append([x1, y1, x2, y2])
+    
+    # extract the face
+#    face = pixels[y1:y2, x1:x2]
+    return face_coordinates
+#    face_coordinates = x1, y1, x2, y2
+#    return face_coordinates
+
 def detect_faces_on_single_image(image):
-    pass
+    if (detection_mode == "mtcnn"):
+        pixels = np.asarray(image)
+        detection_results = detect_faces_on_single_image_with_mtcnn(image)
+        return detection_results
+
+def image_face_recognize(image):
+    return "r"
+
+def scan_faces_on_single_image(image):
+    detection_results = detect_faces_on_single_image(image)
+    faces = []
+    for face in detection_results:
+        x1, y1, x2, y2 = face
+        faces.append(pixels[y1:y2, x1:x2])
+    people_recognized = []
+    for face in faces:
+        result_face_recognition = image_face_recognize(image)
+        people_recognized.append(result_face_recognition)
+    return people_recognized
 
 def detect_faces_on_image_list(image_list):
     pass
@@ -93,3 +148,21 @@ def run_objects_detection_on_single_image(image):
 def run_objects_detection_on_image_list(image_list):
     pass
 
+
+# confirm mtcnn was installed correctly
+# print version
+
+pixels = asarray(image)
+
+# create the detector, using default weights
+# detect faces in the image
+results = detector.detect_faces(pixels)
+
+# extract the bounding box from the first face
+x1, y1, width, height = results[0]['box']
+# bug fix
+x1, y1 = abs(x1), abs(y1)
+x2, y2 = x1 + width, y1 + height
+
+# extract the face
+face = pixels[y1:y2, x1:x2]
