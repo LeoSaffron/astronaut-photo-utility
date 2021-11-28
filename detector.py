@@ -36,14 +36,13 @@ from PIL import Image
 import skimage
 from skimage.io import imread
 
-#from mtcnn.mtcnn import MTCNN
+from mtcnn.mtcnn import MTCNN
 import mtcnn
 
 detection_mode = "mtcnn"
 
 
 detector_mtcnn = MTCNN()
-print(mtcnn.__version__)
 
 
 pic_limit = 10000
