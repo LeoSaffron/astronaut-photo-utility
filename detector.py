@@ -53,6 +53,7 @@ def load_images_from_folder(folder):
         if(filename[-4:] == '.jpg'):
             img = skimage.io.imread(folder + filename) 
             img = cv2.imread(folder + filename) 
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             images.append(img) 
             pic_count += 1
             if (pic_count > pic_limit):
@@ -77,7 +78,6 @@ for i in range(len(images)):
     for detected_face in faces[i]:
         y0, x1, y1, x0 = detected_face
         print(x0, x1, y0, y1)
-    #    cv2.imshow("Face {}".format(index), image_to_detect[y0:y1, x0:x1])
         img = cv2.rectangle(temp_img, (x0,y0), (x1,y1), (0,0,255), 3)
 #        faces.append(images[i][y0:y1, x0:x1])
         index += 1
@@ -113,7 +113,7 @@ def detect_faces_on_single_image_with_mtcnn(image):
 
 def detect_faces_on_single_image(image):
     if (detection_mode == "mtcnn"):
-        pixels = np.asarray(image)
+#        pixels = np.asarray(image)
         detection_results = detect_faces_on_single_image_with_mtcnn(image)
         return detection_results
 
@@ -123,6 +123,7 @@ def image_face_recognize(image):
 def scan_faces_on_single_image(image):
     detection_results = detect_faces_on_single_image(image)
     faces = []
+    pixels = np.asarray(image)
     for face in detection_results:
         x1, y1, x2, y2 = face
         faces.append(pixels[y1:y2, x1:x2])
