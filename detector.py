@@ -142,8 +142,49 @@ def run_face_recognition_predetected_on_single_image(image, faces_coordinates_li
 def run_face_recognition_predetected_on_image_list(image_list, faces_coordinates_list_list):
     pass
 
+def get_faces_list_by_recognizing_faces(images):
+    list_faces_recignized = []
+    for image in images:
+        faces_detected_names = scan_faces_on_single_image(image)
+        list_faces_recignized.append(faces_detected_names)
+    return list_faces_recignized
+
 def run_objects_detection_on_single_image(image):
     pass
 
 def run_objects_detection_on_image_list(image_list):
     pass
+
+
+
+#count=1
+#for image in images:
+#    detection_results = detect_faces_on_single_image(image)
+#    faces = []
+#    pixels = np.asarray(image)
+#    for face in detection_results:
+#        x1, y1, x2, y2 = face
+#        faces.append(pixels[y1:y2, x1:x2])
+#    for face in faces:
+#        plt.imshow(face)
+#        plt.show()
+#        cv2.imwrite("output_faces/" + str(count) + ".jpg", cv2.cvtColor(face, cv2.COLOR_RGB2BGR))
+#        count +=1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
