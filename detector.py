@@ -40,6 +40,7 @@ from mtcnn.mtcnn import MTCNN
 import mtcnn
 
 detection_mode = "mtcnn"
+mode_face_recognition = "face_recognition_package_1_3_0"
 
 
 detector_mtcnn = MTCNN()
@@ -117,7 +118,23 @@ def detect_faces_on_single_image(image):
         detection_results = detect_faces_on_single_image_with_mtcnn(image)
         return detection_results
 
+def image_face_recognize_with_package_face_recognition(image):
+    face_encoding = None
+    name = ""
+    try:
+        face_encoding = fr.face_encodings(image)[0]
+        matches = fr.compare_faces(known_name_encodings, face_encoding)
+        face_distances = fr.face_distance(known_name_encodings, face_encoding)
+        best_match = np.argmin(face_distances)
+        if matches[best_match]:
+            name = known_names[best_match]
+    except:
+        pass
+    return name
+
 def image_face_recognize(image):
+    if mode_face_recognition == "face_recognition_package_1_3_0":
+        return image_face_recognize_with_package_face_recognition(image)
     return "r"
 
 def scan_faces_on_single_image(image):
@@ -129,7 +146,7 @@ def scan_faces_on_single_image(image):
         faces.append(pixels[y1:y2, x1:x2])
     people_recognized = []
     for face in faces:
-        result_face_recognition = image_face_recognize(image)
+        result_face_recognition = image_face_recognize(face)
         people_recognized.append(result_face_recognition)
     return people_recognized
 
@@ -173,6 +190,18 @@ def run_objects_detection_on_image_list(image_list):
 
 
 
+
+path_known_faces_images = "./faces_known_test/"
+known_names = []
+known_name_encodings = []
+filenames_images = os.listdir(path_known_faces_images)
+
+for _ in filenames_images:
+    image_loaded = fr.load_image_file(path_known_faces_images + _)
+    image_path = path_known_faces_images + _
+    encoding = fr.face_encodings(image_loaded)[0]
+    known_name_encodings.append(encoding)
+    known_names.append(os.path.splitext(os.path.basename(image_path))[0].capitalize())
 
 
 
