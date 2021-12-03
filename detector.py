@@ -38,6 +38,8 @@ from skimage.io import imread
 
 from mtcnn.mtcnn import MTCNN
 import mtcnn
+import face_recognition as fr
+
 
 detection_mode = "mtcnn"
 mode_face_recognition = "face_recognition_package_1_3_0"
@@ -64,26 +66,40 @@ images_path = "test_pictures/"
 
 images = load_images_from_folder(images_path)
 
-faces = []
-image_count = 0
-for img in images:
-    faces.append(face_recognition.face_locations(img,model = "cnn"))
-    image_count += 1
-    print("faces detected on {} pictures".format(image_count))
-    if (image_count % 5 == 0):
-        print("faces detected on {} pictures".format(image_count))
 
-for i in range(len(images)):
-    index = 0
-    temp_img = images[i].copy()
-    for detected_face in faces[i]:
-        y0, x1, y1, x0 = detected_face
-        print(x0, x1, y0, y1)
-        img = cv2.rectangle(temp_img, (x0,y0), (x1,y1), (0,0,255), 3)
-#        faces.append(images[i][y0:y1, x0:x1])
-        index += 1
-    plt.imshow(img)
-    plt.show()
+path_known_faces_images = "./faces_known_test/"
+known_names = []
+known_name_encodings = []
+filenames_images = os.listdir(path_known_faces_images)
+
+for _ in filenames_images:
+    image_loaded = fr.load_image_file(path_known_faces_images + _)
+    image_path = path_known_faces_images + _
+    encoding = fr.face_encodings(image_loaded)[0]
+    known_name_encodings.append(encoding)
+    known_names.append(os.path.splitext(os.path.basename(image_path))[0].capitalize())
+
+
+#faces = []
+#image_count = 0
+#for img in images:
+#    faces.append(face_recognition.face_locations(img,model = "cnn"))
+#    image_count += 1
+#    print("faces detected on {} pictures".format(image_count))
+#    if (image_count % 5 == 0):
+#        print("faces detected on {} pictures".format(image_count))
+#
+#for i in range(len(images)):
+#    index = 0
+#    temp_img = images[i].copy()
+#    for detected_face in faces[i]:
+#        y0, x1, y1, x0 = detected_face
+#        print(x0, x1, y0, y1)
+#        img = cv2.rectangle(temp_img, (x0,y0), (x1,y1), (0,0,255), 3)
+##        faces.append(images[i][y0:y1, x0:x1])
+#        index += 1
+#    plt.imshow(img)
+#    plt.show()
 
 
 def detect_faces_on_single_image_with_mtcnn(image):
@@ -174,34 +190,9 @@ def run_objects_detection_on_image_list(image_list):
 
 
 
-#count=1
-#for image in images:
-#    detection_results = detect_faces_on_single_image(image)
-#    faces = []
-#    pixels = np.asarray(image)
-#    for face in detection_results:
-#        x1, y1, x2, y2 = face
-#        faces.append(pixels[y1:y2, x1:x2])
-#    for face in faces:
-#        plt.imshow(face)
-#        plt.show()
-#        cv2.imwrite("output_faces/" + str(count) + ".jpg", cv2.cvtColor(face, cv2.COLOR_RGB2BGR))
-#        count +=1
 
 
 
-
-path_known_faces_images = "./faces_known_test/"
-known_names = []
-known_name_encodings = []
-filenames_images = os.listdir(path_known_faces_images)
-
-for _ in filenames_images:
-    image_loaded = fr.load_image_file(path_known_faces_images + _)
-    image_path = path_known_faces_images + _
-    encoding = fr.face_encodings(image_loaded)[0]
-    known_name_encodings.append(encoding)
-    known_names.append(os.path.splitext(os.path.basename(image_path))[0].capitalize())
 
 
 
