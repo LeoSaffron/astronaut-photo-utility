@@ -182,13 +182,20 @@ def get_faces_list_by_recognizing_faces(images):
         list_faces_recignized.append(faces_detected_names)
     return list_faces_recignized
 
+def run_objects_detection_on_single_image_resnet(image):
+    pass
+
 def run_objects_detection_on_single_image(image):
     pass
 
 def run_objects_detection_on_image_list(image_list):
     pass
 
+def run_clustering_on_detected_faces(faces):
+    pass
 
+def run_clustering_on_detected_objects(faces):
+    pass
 
 
 
