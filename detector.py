@@ -23,7 +23,10 @@ from keras.layers import Reshape, Conv2DTranspose
 from keras.models import Model
 from keras.datasets import mnist
 from keras.losses import mse, binary_crossentropy
-from keras.utils import plot_model
+try:
+    from keras.utils import plot_model
+except:
+    from keras.utils.vis_utils import plot_model
 from keras import backend as K
 
 import numpy as np
