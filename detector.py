@@ -42,6 +42,7 @@ from skimage.io import imread
 from mtcnn.mtcnn import MTCNN
 import mtcnn
 import face_recognition as fr
+import tensorflow as tf
 
 
 detection_mode = "mtcnn"
@@ -51,7 +52,7 @@ mode_face_recognition = "face_recognition_package_1_3_0"
 detector_mtcnn = MTCNN()
 
 
-pic_limit = 10000
+pic_limit = 200
 def load_images_from_folder(folder): 
     images = [] 
     pic_count = 0
@@ -199,6 +200,33 @@ def run_clustering_on_detected_faces(faces):
 
 def run_clustering_on_detected_objects(faces):
     pass
+
+
+
+
+
+
+
+
+mymodel = tf.keras.applications.ResNet50(
+    include_top=True,
+    weights="imagenet",
+    input_tensor=None,
+    input_shape=None,
+    pooling=None,
+    classes=1000
+)
+
+
+from skimage.transform import resize
+
+
+
+
+images_test = []
+for image in images:
+    images_test.append(resize(image, (224, 224)))
+
 
 
 
