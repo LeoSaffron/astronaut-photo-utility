@@ -30,7 +30,6 @@ except:
 from keras import backend as K
 
 import numpy as np
-import matplotlib.pyplot as plt
 import argparse
 import os
 import numpy as np # linear algebra
@@ -43,6 +42,14 @@ from mtcnn.mtcnn import MTCNN
 import mtcnn
 import face_recognition as fr
 import tensorflow as tf
+import pathlib
+import time
+from object_detection.utils import label_map_util
+from object_detection.utils import visualization_utils as viz_utils
+
+gpus = tf.config.experimental.list_physical_devices('GPU')
+for gpu in gpus:
+    tf.config.experimental.set_memory_growth(gpu, True)
 
 
 detection_mode = "mtcnn"
@@ -53,6 +60,18 @@ detector_mtcnn = MTCNN()
 
 
 pic_limit = 200
+
+def get_images_path_from_folder(folder): 
+    path_list = [] 
+    pic_count = 0
+    for filename in os.listdir(folder): 
+        if(filename[-4:] == '.jpg'):
+            path_list.append(folder + filename) 
+            pic_count += 1
+            if (pic_count > pic_limit):
+                break
+    return path_list 
+
 def load_images_from_folder(folder): 
     images = [] 
     pic_count = 0
@@ -186,14 +205,122 @@ def get_faces_list_by_recognizing_faces(images):
         list_faces_recignized.append(faces_detected_names)
     return list_faces_recignized
 
-def run_objects_detection_on_single_image_resnet(image):
-    pass
 
-def run_objects_detection_on_single_image(image):
-    pass
+def get_ssd_resnet_model_from_net():
+    url = 'http://download.tensorflow.org/models/object_detection/tf2/20200711/ssd_resnet101_v1_fpn_640x640_coco17_tpu-8.tar.gz'
+    
+    PATH_TO_MODEL_DIR = tf.keras.utils.get_file(
+        fname='ssd_resnet101_v1_fpn_640x640_coco17_tpu-8',
+        origin=url,
+        untar=True)
+    
+    # PATH_TO_MODEL_DIR
+    
+    # url = 'https://raw.githubusercontent.com/tensorflow/models/master/research/object_detection/data/mscoco_label_map.pbtxt'
+    
+    # PATH_TO_LABELS = tf.keras.utils.get_file(
+    #     fname='mscoco_label_map.pbtxt',
+    #     origin=url,
+    #     untar=False)
+    
+    
+    PATH_TO_SAVED_MODEL = PATH_TO_MODEL_DIR + "/saved_model"
+    
+    print('Loading model...', end='')
+    start_time = time.time()
+    
+    # Load saved model and build the detection function
+    detect_fn = tf.saved_model.load(PATH_TO_SAVED_MODEL)
+    
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print('Done! Took {} seconds'.format(elapsed_time))
+    return detect_fn
 
-def run_objects_detection_on_image_list(image_list):
-    pass
+def get_ssd_resnet_path_to_labels():
+    url = 'https://raw.githubusercontent.com/tensorflow/models/master/research/object_detection/data/mscoco_label_map.pbtxt'
+    return tf.keras.utils.get_file(
+        fname='mscoco_label_map.pbtxt',
+        origin=url,
+        untar=False)
+
+
+
+
+def detect_objects_ssd_resnet_by_image_numpy(image, model, category_index, threshold):
+    
+    image_np = image
+    
+    input_tensor = tf.convert_to_tensor(image_np)
+    
+    # The model expects a batch of images, so add an axis with `tf.newaxis`.
+    input_tensor = input_tensor[tf.newaxis, ...]
+    
+    # Do the detection
+    detections = model(input_tensor)
+    
+    # All outputs are batches tensors.
+    # Convert to numpy arrays, and take index [0] to remove the batch dimension.
+    # We're only interested in the first num_detections.
+    num_detections = int(detections.pop('num_detections'))
+    detections = {key: value[0, :num_detections].numpy()
+                   for key, value in detections.items()}
+    detections['num_detections'] = num_detections
+    
+    # detection_classes should be ints.
+    detections['detection_classes'] = detections['detection_classes'].astype(np.int64)
+    
+    # show classes
+    # unique_classes = set(detections['detection_classes'])
+    # print("Classes found:")
+    # for c in unique_classes:
+    #     print(category_index[c]['name'])
+    
+    image_np_with_detections = image_np.copy()
+    
+    viz_utils.visualize_boxes_and_labels_on_image_array(
+          image_np_with_detections,
+          detections['detection_boxes'],
+          detections['detection_classes'],
+          detections['detection_scores'],
+          category_index,
+          use_normalized_coordinates=True,
+          max_boxes_to_draw=200,
+          min_score_thresh=.30,
+          agnostic_mode=False)
+    
+    plt.figure(figsize=(15, 10))
+    plt.imshow(image_np_with_detections)
+    print('Done')
+    plt.show()
+
+    result_detections_int = []
+    result_detections_str = []
+    for i in range(len(detections['detection_scores'])):
+        if detections['detection_scores'][i] > threshold:
+            result_detections_int.append(detections['detection_classes'][i])
+            result_detections_str.append(category_index[detections['detection_classes'][i]]['name'])
+    return result_detections_int, result_detections_str
+
+def detect_objects_ssd_resnet_by_image_path(path, model, category_index, threshold):
+    image_np = np.array(Image.open(path))
+    return detect_objects_ssd_resnet_by_image_numpy(image, model, category_index, threshold)
+
+
+
+def run_objects_detection_on_single_image_resnet(image, threshold=0.3):
+    global model_ssd_resnet, category_index_ssd_resnet
+    return detect_objects_ssd_resnet_by_image_numpy(image,
+                model_ssd_resnet, category_index_ssd_resnet, threshold=threshold)
+
+def run_objects_detection_on_single_image(image, threshold=0.3):
+    return run_objects_detection_on_single_image_resnet(image, threshold=threshold)
+
+def run_objects_detection_on_image_list(image_list, threshold=0.3):
+    results = []
+    for image in image_list:
+        results.append(run_objects_detection_on_single_image(image, threshold=0.3))
+    return results
 
 def run_clustering_on_detected_faces(faces):
     pass
@@ -202,8 +329,29 @@ def run_clustering_on_detected_objects(faces):
     pass
 
 
+# detect_fn = get_ssd_resnet_model_from_net()
+
+model_ssd_resnet = get_ssd_resnet_model_from_net()
+
+category_index_ssd_resnet = label_map_util.create_category_index_from_labelmap(
+    get_ssd_resnet_path_to_labels(),
+    use_display_name=True)
 
 
+
+def get_encoding_of_detected_objects_for_single_result(result_item):
+    result_encoded = [0] * 1000
+    for detected_object in result_item[0]:
+        result_encoded[detected_object] += 1
+        return result_encoded
+
+def get_encoding_of_detected_objects(results_detected_objects):
+    result = []
+    for result_item in results_detected_objects:
+        result.append(get_encoding_of_detected_objects_for_single_result(result_item))
+    return result
+    
+    
 
 
 
@@ -226,6 +374,43 @@ from skimage.transform import resize
 images_test = []
 for image in images:
     images_test.append(resize(image, (224, 224)))
+
+
+# from tensorflow.keras.applications.resnet50 import ResNet50
+# from tensorflow.keras.preprocessing import image
+# from tensorflow.keras.applications.resnet50 import preprocess_input, decode_predictions
+
+
+# model = ResNet50(weights='imagenet')
+
+
+
+# img = image.load_img(images_path + os.listdir(images_path)[0], target_size=(224, 224))
+
+
+# x = image.img_to_array(img)
+# x = np.expand_dims(x, axis=0)
+# x = preprocess_input(x)
+
+# preds = model.predict(x)
+# # decode the results into a list of tuples (class, description, probability)
+# # (one such list for each sample in the batch)
+# print('Predicted:', decode_predictions(preds, top=30)[0])
+
+# from tensorflow.keras.applications.vgg16 import VGG16
+
+# model_vgg16 = VGG16(weights='imagenet', include_top=False)
+
+
+# features_vgg16 = model_vgg16.predict(x)
+# print('Predicted:', decode_predictions(preds_vgg16, top=30)[0])
+
+
+
+
+
+
+
 
 
 
