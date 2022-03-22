@@ -350,9 +350,11 @@ def get_encoding_of_detected_objects(results_detected_objects):
     for result_item in results_detected_objects:
         result.append(get_encoding_of_detected_objects_for_single_result(result_item))
     return result
-    
-    
 
+
+from sklearn.cluster import KMeans
+kmeans = KMeans(n_clusters=6, n_init=20, n_jobs=4)
+y_pred_kmeans = kmeans.fit_predict(np.asarray(a))
 
 
 
