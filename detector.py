@@ -107,28 +107,6 @@ for _ in filenames_images:
     known_names.append(os.path.splitext(os.path.basename(image_path))[0].capitalize())
 
 
-#faces = []
-#image_count = 0
-#for img in images:
-#    faces.append(face_recognition.face_locations(img,model = "cnn"))
-#    image_count += 1
-#    print("faces detected on {} pictures".format(image_count))
-#    if (image_count % 5 == 0):
-#        print("faces detected on {} pictures".format(image_count))
-#
-#for i in range(len(images)):
-#    index = 0
-#    temp_img = images[i].copy()
-#    for detected_face in faces[i]:
-#        y0, x1, y1, x0 = detected_face
-#        print(x0, x1, y0, y1)
-#        img = cv2.rectangle(temp_img, (x0,y0), (x1,y1), (0,0,255), 3)
-##        faces.append(images[i][y0:y1, x0:x1])
-#        index += 1
-#    plt.imshow(img)
-#    plt.show()
-
-
 ###################################################################################
 ###                           Face detection Recognition
 ###################################################################################
@@ -158,7 +136,6 @@ def detect_faces_on_single_image_with_mtcnn(image):
 
 def detect_faces_on_single_image(image):
     if (detection_mode == "mtcnn"):
-#        pixels = np.asarray(image)
         detection_results = detect_faces_on_single_image_with_mtcnn(image)
         return detection_results
 
@@ -173,14 +150,21 @@ def image_face_recognize_with_package_face_recognition(image):
         if matches[best_match]:
             name = known_names[best_match]
     except:
+        # TODO: create log for exceptions in face recognition
         pass
     return name
 
+# The function below calls a function to detect where faces are in a single picture (if any)
+# There could be multiple face detection functions in the code here. It calls for the right one based on the configuration
+# TODO: Change the method of calling the correct function to a dictionary with function name and a reference to the function
 def image_face_recognize(image):
     if mode_face_recognition == "face_recognition_package_1_3_0":
         return image_face_recognize_with_package_face_recognition(image)
+    # return "r" for "error" if the mode_face_recognition variable is set incorrectly
+    # TODO: change return "r" to an actual raise exception
     return "r"
 
+# The function below recognizes who are the faces present in a single image
 def scan_faces_on_single_image(image):
     detection_results = detect_faces_on_single_image(image)
     faces = []
@@ -194,15 +178,7 @@ def scan_faces_on_single_image(image):
         people_recognized.append(result_face_recognition)
     return people_recognized
 
-def detect_faces_on_image_list(image_list):
-    pass
-
-def run_face_recognition_predetected_on_single_image(image, faces_coordinates_list):
-    pass
-
-def run_face_recognition_predetected_on_image_list(image_list, faces_coordinates_list_list):
-    pass
-
+#The function below runs the previously written scan_faces_on_single_image function, but on a list of images
 def get_faces_list_by_recognizing_faces(images):
     list_faces_recignized = []
     for image in images:
