@@ -1,15 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Sep 23 14:48:32 2020
-
-@author: jonsnow
-"""
-
-# -*- coding: utf-8 -*-
-"""
 Created on Wed Sep 23 02:13:15 2020
 
-@author: jonsnow
+@author: Leon
 """
 
 import cv2
@@ -47,19 +40,26 @@ import time
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as viz_utils
 
+
+# To test that we use GPU
 gpus = tf.config.experimental.list_physical_devices('GPU')
 for gpu in gpus:
     tf.config.experimental.set_memory_growth(gpu, True)
 
-
+# There are several detection algorythm I want to test
+# Here the in the setting we can change the approach
 detection_mode = "mtcnn"
 mode_face_recognition = "face_recognition_package_1_3_0"
 
 
 detector_mtcnn = MTCNN()
 
-
+# pic_limit mostly used to test the code is running properly
 pic_limit = 200
+
+###################################################################################
+###                           Loading Images
+###################################################################################
 
 def get_images_path_from_folder(folder): 
     path_list = [] 
@@ -89,6 +89,10 @@ images_path = "test_pictures/"
 
 images = load_images_from_folder(images_path)
 
+
+# Now we'll load faces that we already know in order to recognize them
+# TODO: Instead of relying on known faces, recognize all the faces and build their importance based on their distribution in the album
+# TODO: change the code below to functions instead of a code sequence
 
 path_known_faces_images = "./faces_known_test/"
 known_names = []
@@ -125,6 +129,10 @@ for _ in filenames_images:
 #    plt.show()
 
 
+###################################################################################
+###                           Face detection Recognition
+###################################################################################
+
 def detect_faces_on_single_image_with_mtcnn(image):
     # confirm mtcnn was installed correctly
     # print version
@@ -146,10 +154,7 @@ def detect_faces_on_single_image_with_mtcnn(image):
         face_coordinates.append([x1, y1, x2, y2])
     
     # extract the face
-#    face = pixels[y1:y2, x1:x2]
     return face_coordinates
-#    face_coordinates = x1, y1, x2, y2
-#    return face_coordinates
 
 def detect_faces_on_single_image(image):
     if (detection_mode == "mtcnn"):
@@ -205,7 +210,7 @@ def get_faces_list_by_recognizing_faces(images):
         list_faces_recignized.append(faces_detected_names)
     return list_faces_recignized
 
-
+## Get and save ResNet model
 def get_ssd_resnet_model_from_net():
     url = 'http://download.tensorflow.org/models/object_detection/tf2/20200711/ssd_resnet101_v1_fpn_640x640_coco17_tpu-8.tar.gz'
     
@@ -213,15 +218,6 @@ def get_ssd_resnet_model_from_net():
         fname='ssd_resnet101_v1_fpn_640x640_coco17_tpu-8',
         origin=url,
         untar=True)
-    
-    # PATH_TO_MODEL_DIR
-    
-    # url = 'https://raw.githubusercontent.com/tensorflow/models/master/research/object_detection/data/mscoco_label_map.pbtxt'
-    
-    # PATH_TO_LABELS = tf.keras.utils.get_file(
-    #     fname='mscoco_label_map.pbtxt',
-    #     origin=url,
-    #     untar=False)
     
     
     PATH_TO_SAVED_MODEL = PATH_TO_MODEL_DIR + "/saved_model"
@@ -245,6 +241,9 @@ def get_ssd_resnet_path_to_labels():
         untar=False)
 
 
+###################################################################################
+###                           Object Detection
+###################################################################################
 
 
 def detect_objects_ssd_resnet_by_image_numpy(image, model, category_index, threshold):
@@ -338,6 +337,9 @@ category_index_ssd_resnet = label_map_util.create_category_index_from_labelmap(
     use_display_name=True)
 
 
+###################################################################################
+###                              Model training
+###################################################################################
 
 def get_encoding_of_detected_objects_for_single_result(result_item):
     result_encoded = [0] * 1000
@@ -351,6 +353,9 @@ def get_encoding_of_detected_objects(results_detected_objects):
         result.append(get_encoding_of_detected_objects_for_single_result(result_item))
     return result
 
+###################################################################################
+###                            Unsupervised Learning
+###################################################################################
 
 from sklearn.cluster import KMeans
 kmeans = KMeans(n_clusters=6, n_init=20, n_jobs=4)
